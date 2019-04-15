@@ -1,74 +1,65 @@
 import numpy as np 
 from matplotlib import pyplot as plt
+import math
 
-def OU_motion(t,dt,tau,sigma,initial_value):
+def random_walk(n,z):
+    steps = np.random.choice([-1,1],n,p =[(1-z),(z)])
+    final = sum(steps)
+    return final
+
+def bi_co(n,k): # BinomialCoeffecient .
+    m = math.factorial(n)
+    b = math.factorial(n-k)
+    r = math.factorial(k)
     
-    values = []
-    timesteps = list(np.arange(0,t,dt))
-    for i,ti in enumerate(timesteps):
-        B = np.sqrt(dt)*np.random.normal(0.0,1)
-        if i == 0:
-            value = initial_value
-        else:
-            value = values[i-1] + dt*(values[i-1])*(-1/tau) + (sigma/np.sqrt(tau))*B
-        values.append(value) 
+    return m/(r*b)     
+
+def monte_carlo(trials,n,p):
+    final_values = []
+    for i in np.arange(0,trials,1):
+        final_values.append(random_walk(n,p))
+
+    return final_values
+
+def probability(n,p): # This is my probability density function for n,k,p and q. 
+    k_vals =[]
+    prob_vals = [] 
+    p = p
+    q = 1-p
+    for k in range(-n,n,2):
+        n_plus = (n+k)/2
+        n_minus = (n-k)/2
+        prob = ( bi_co(n,(n+k)/2) ) * (p**n_plus)*(q**n_minus)
+        k_vals.append(k)
+        prob_vals.append(prob)
         
-    return values
+    return k_vals,prob_vals
 
-def monte_carlo_OU(t,dt,tau,sigma,initial_value,n):
-    OU_array = []
-    average_path = []
-    timesteps = list(np.arange(0,t,dt))
-    std_vals = [] 
-    squared_vals2 = []
-    for i in np.arange(0,n,1):
-        OU_array.append(OU_motion(t,dt,tau,sigma,initial_value))
-    for step in np.arange(0,len(timesteps)):
-        vals = []
-        squared_vals = []
-        for i in range(len(OU_array)):
-            vals.append(OU_array[i][step])
-            squared_vals.append((OU_array[i][step])**2)
-        expected_val = np.average(vals)
-        std = np.sqrt(np.average((np.array(vals)-expected_val)**2))
-        average_path.append(expected_val)
-        squared_vals2.append(np.mean(squared_vals))
-        std_vals.append(std)
-    sigmaplus = np.array(average_path) + np.array(std_vals)
-    sigmaminus = np.array(average_path) - np.array(std_vals) 
-
+def graph(data,expected,n):
     plt.figure(1)
-    plt.title("Ornstein-Uhlenbeck ")
-    plt.ylabel("X(t)")
-    plt.xlabel("Time")
-    plt.scatter(timesteps,average_path, color = 'gray', label = 'Average', s=0.1)
-    plt.scatter(timesteps,sigmaplus, color = 'tomato', label = 'Average + σ(t)',s=0.1)
-    plt.scatter(timesteps,sigmaminus, color = 'darkturquoise', label = 'Average - σ(t) ',s=0.1)
+    plt.title("Frequency Distribution")
+    plt.ylabel("Frequency")
+    plt.xlabel("Distance from x = 0")
+    bin_widths = int(round(np.sqrt(n)))
+    plt.hist(data, bins= bin_widths,label = "Actual Distribution")
+    plt.plot(expected[0],expected[1], "r--", label = "Expected Distribution")
     plt.legend()
-
-    plt.figure(2)
-    plt.title("Ornstein-Uhlenbeck")
-    plt.ylabel("X(T)")
-    plt.xlabel("Time")
-    plt.scatter(timesteps,average_path, s = 0.1, color = 'gray')
-    
-    plt.figure(3)
-    plt.title("Average Value of X^2 vs Time")
-    plt.ylabel("<X^2>")
-    plt.xlabel("Time")
-    plt.scatter(timesteps,squared_vals2,color = 'gray',s=0.1)
     plt.show()
     
-def main():
-    tau = float(input("Please enter a tau value: "))
-    sigma = float(input("Please enter a sigma value: "))
-    t = float(input("Please enter a total t value: "))
-    dt = float(input("Please enter a time step value: "))
-    n = float(input("Please enter a number of trials: "))
-    monte_carlo_OU(t,dt,tau,sigma,0,n)
 
+
+def main():
+    trial_no = int(input("Please enter the number of trials you would like to run: "))
+    number_of_steps = int(input("Please enter the number of steps the particle will take: "))
+    p = float(input("Please enter the probability of the particle moving to the right: "))
+    real_trial = monte_carlo(trial_no,number_of_steps,p)
+    probabilities = probability(number_of_steps,p)
+    expected_frequencies = []
+    for i in probabilities[1]:
+        expected_frequencies.append(i*trial_no)
+    expected_results = [probabilities[0],expected_frequencies]
+    graph(real_trial,expected_results,trial_no)
+    print("The expected value is: ", round(np.mean(real_trial),1))
+    print("The variance of the sample is: ", round(np.var(real_trial),1))
+    
 main()
-            
-            
-            
-            
