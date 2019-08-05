@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<html>
+
+<div>
+    {% if title %}
+    <title>{{ title }}</title>
+    {% else %}
+    <title>Brownian Motion</title>
+    {% endif %}
+<div>
+    <head> 
+    <h1>
+    {{title}} Graph 
+    </h1>
+    </head>
+<div>
+    <body class = "body">
+    <p The graph below is the historicial data plus the forecast></p>
+         <div class="container" align= "center">
+         <embed type= "image/svg+xml" src= {{ graph_data|safe }} style=
+         "'max-width:1000px"/>
+         </div>
+    </body>
+</html>

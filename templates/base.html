@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+
+<html>
+
+<div>
+    {% if title %}
+    <title>Brownian Motion - {{ title }}</title>
+    {% else %}
+    <title>Brownian Motion</title>
+    {% endif %}
+<div>
+    <head> 
+    <h1>
+    {%block head_content%}
+    {%endblock head_content%}
+    </h1>
+    </head>
+<div>
+    <body>
+    <p>
+    {%block body_content%}
+    {%endblock body_content%}
+    </p>
+    </body>
+
+</html>
